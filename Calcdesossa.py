@@ -4,10 +4,20 @@ import math
 
 def calcular_coxao_bola(peso, preco, media_perdas, media_lucro):
     valortotal = peso * preco
+    
+    #peças
     patinho_e_coxao_mole = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.09)
     coxao_duro_e_lagarto = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.05)
     musculo = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 - 0.10)
-    lpatinho, lcoxaomole, lcoxaoduro, llagarto, lmusculo = (preco * (peso * 0.13), preco * (peso * 0.27), preco * (peso * 0.15), preco * (peso * 0.08), preco * (peso * 0.13))
+
+    #lucro por peça  
+    lpatinho = preco * (peso * 0.13)
+    lcoxaomole = preco * (peso * 0.27)
+    lcoxaoduro = preco * (peso * 0.15)
+    llagarto = preco * (peso * 0.08)
+    lmusculo = preco * (peso * 0.13)
+    
+    #calculo do lucro total
     lucro = valortotal - (lpatinho + lcoxaomole + lcoxaoduro + llagarto + lmusculo)
     if preco <= 12:
         return {
@@ -26,65 +36,105 @@ def calcular_coxao_bola(peso, preco, media_perdas, media_lucro):
 
     return {
         "\n==== Preços para venda ====\n"
-        f"Patinho e Coxão Mole":math.ceil(round(patinho_e_coxao_mole, 2)),
-        "Coxão Duro e Lagarto":math.ceil(round(coxao_duro_e_lagarto, 2)),
-        "Músculo":math.ceil(round(musculo, 2)),
-        "Lucro Aproximado na peça":math.ceil(round(lucro, 2)),
+        f"Patinho e Coxão Mole R$":math.ceil(round(patinho_e_coxao_mole, 2)),
+        "Coxão Duro e Lagarto R$":math.ceil(round(coxao_duro_e_lagarto, 2)),
+        "Músculo R$":math.ceil(round(musculo, 2)),
+        "Lucro Aproximado na peça R$":math.ceil(round(lucro, 2)),
         "\n==== Peso estimado por peça ====\n"
-        "Patinho ":peso*0.13,
-        "Coxão Mole ":peso*0.27,
-        "Coxão Duro ":peso*0.15,
-        "Lagarto ":peso*0.08,
-        "Músculo ":peso*0.13
+        "Patinho KG":peso*0.13,
+        "Coxão Mole KG":peso*0.27,
+        "Coxão Duro KG":peso*0.15,
+        "Lagarto KG":peso*0.08,
+        "Músculo KG":peso*0.13
     }
+
 def calcular_dianteiro(peso, preco, media_perdas, media_lucro):
     valortotal = peso * preco
-    paleta, peixinho, musculo, costela_gaucha, acem = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.05), (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.10), (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 - 0.06), (preco * (media_lucro / 100 + 1 + 0.10)), (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1)
-    lpaleta, lpeixinho, lmusculo, lcostela, lacem = preco * (peso * 0.2422), preco * (peso * 0.03), preco * (peso * 0.0571), preco * (peso * 0.1982), preco * (peso * 0.2963)
+
+    #peças
+    paleta = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.05)
+    peixinho = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.10)
+    musculo = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 - 0.06)
+    costela_gaucha = (preco * (media_lucro / 100 + 1 + 0.10))
+    acem = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1)
+
+    #lucro por peça
+    lpaleta = preco * (peso * 0.2422)
+    lpeixinho = preco * (peso * 0.03)
+    lmusculo = preco * (peso * 0.0571)
+    lcostela = preco * (peso * 0.1982)
+    lacem = preco * (peso * 0.2963)
+
+    #calculo do lucro total
     lucro = valortotal - (lpaleta + lpeixinho + lmusculo + lcostela + lacem)
+
     return {
     "\n==== Preços para venda ====\n"
-    "Paleta": math.ceil(round(paleta, 2)),
-    "Peixinho": math.ceil(round(peixinho, 2)),
-    "Musculo": math.ceil(round(musculo, 2)),
-    "Costela Gaúcha": math.ceil(round(costela_gaucha, 2)),
-    "Acém": math.ceil(round(acem, 2)),
+    "Paleta R$": math.ceil(round(paleta, 2)),
+    "Peixinho R$": math.ceil(round(peixinho, 2)),
+    "Musculo R$": math.ceil(round(musculo, 2)),
+    "Costela Gaúcha R$": math.ceil(round(costela_gaucha, 2)),
+    "Acém R$": math.ceil(round(acem, 2)),
     "Lucro Aproximado na peça": math.ceil(round(lucro, 2)),
     "\n==== Peso estimado por peça ====\n"
-    "Paleta ": peso * 0.2422,
-    "Peixinho ": peso * 0.03,
-    "Músculo ": peso * 0.0571,
-    "Costla Gaúcha ": peso * 0.1982,
-    "Acém ": peso * 0.2963
+    "Paleta KG": peso * 0.2422,
+    "Peixinho KG": peso * 0.03,
+    "Músculo KG": peso * 0.0571,
+    "Costla Gaúcha KG": peso * 0.1982,
+    "Acém KG": peso * 0.2963
     }
+
 def calcular_traseiro(peso, preco, media_perdas, media_lucro):
     valortotal = peso * preco
-    contra_file, picanha, mignon, musculo, coxao_duro_e_lagarto, maminha, alcatra, patinho_e_coxao_mole = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.10), (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.4), (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.35), (preco * (media_perdas / 100 + 1)), (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 - 0.05), (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1), (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.0655), (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 - 0.02)
-    lcontra, lpicanha, lmignon, lmusculo, lcoxao, llagarto, lmaminha, lalcatra, lpatinho, lmole = preco * (peso * 0.17), preco * (peso * 0.0178), preco * (peso * 0.0454), preco * (peso * 0.069), preco * (peso * 0.1014), preco * (peso * 0.0487), preco * (peso * 0.025), preco * (peso * 0.0595), preco * (peso * 0.0923), preco * (peso * 0.1544)
+
+    #peças
+    contra_file = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.10)
+    picanha = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.4)
+    mignon = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.35)
+    musculo = (preco * (media_perdas / 100 + 1))
+    coxao_duro_e_lagarto = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 - 0.05)
+    maminha = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1)
+    alcatra = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.0655)
+    patinho_e_coxao_mole = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 - 0.02)
+
+    #lucro por peça
+    lcontra = preco * (peso * 0.17)
+    lpicanha = preco * (peso * 0.0178)
+    lmignon = preco * (peso * 0.0454)
+    lmusculo = preco * (peso * 0.069)
+    lcoxao = preco * (peso * 0.1014)
+    llagarto = preco * (peso * 0.0487)
+    lmaminha = preco * (peso * 0.025)
+    lalcatra = preco * (peso * 0.0595)
+    lpatinho = preco * (peso * 0.0923)
+    lmole = preco * (peso * 0.1544)
+    
+    #calculo do lucro total
     lucro = valortotal - (lcontra + lpicanha + lmignon + lmusculo + lcoxao + llagarto + lmaminha + lalcatra + lpatinho + lmole)
     return{
     "\n==== Preços para venda ====\n"
     "Contra File R$": math.ceil(round(contra_file, 2)),
-    "Picanha": math.ceil(round(picanha, 2)),
-    "Mignon": math.ceil(round(mignon, 2)),
-    "Musculo": math.ceil(round(musculo, 2)),
-    "Coxão Duro e Lagarto": math.ceil(round(coxao_duro_e_lagarto, 2)),
-    "Maminha": math.ceil(round(maminha, 2)),
-    "Alcatra": math.ceil(round(alcatra, 2)),
+    "Picanha R$": math.ceil(round(picanha, 2)),
+    "Mignon R$": math.ceil(round(mignon, 2)),
+    "Musculo R$": math.ceil(round(musculo, 2)),
+    "Coxão Duro e Lagarto R$": math.ceil(round(coxao_duro_e_lagarto, 2)),
+    "Maminha R$": math.ceil(round(maminha, 2)),
+    "Alcatra R$": math.ceil(round(alcatra, 2)),
     "Patinho e Coxão Mole": math.ceil(round(patinho_e_coxao_mole, 2)),
     "Lucro Aproximado na peça": math.ceil(round(lucro, 2)),
     "\n==== Peso estimado por peça ====\n"
-    "Contra File ": peso * 0.17,
-    "Picanha ": peso * 0.0178,
-    "Mignon ": peso * 0.0454,
-    "Musculo ": peso * 0.069,
-    "Coxão Duro ": peso * 0.1014,
-    "Lagarto ": peso * 0.0487,
-    "Maminha ": peso * 0.025,
-    "Alcatra ": peso * 0.0595,
-    "Patinho ": peso * 0.0923,
-    "Coxão Mole ": peso * 0.1544
+    "Contra File KG": peso * 0.17,
+    "Picanha KG": peso * 0.0178,
+    "Mignon KG": peso * 0.0454,
+    "Musculo KG": peso * 0.069,
+    "Coxão Duro KG": peso * 0.1014,
+    "Lagarto KG": peso * 0.0487,
+    "Maminha KG": peso * 0.025,
+    "Alcatra KG": peso * 0.0595,
+    "Patinho KG": peso * 0.0923,
+    "Coxão Mole KG": peso * 0.1544
     }
+
 def calcular():
     try:
         peso = float(entry_peso.get())
