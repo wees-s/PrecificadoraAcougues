@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste JavaScript</title>
+</head>
+<body>
+    <h1>Teste de Funcionamento</h1>
+    <div id="resultado"></div>
+    
+    <script>
+        // Testar se as regras funcionam
+        const EntradaRules = { 
+            'Voucher': (valor) => valor * 0.88,
+            'Débito': (valor) => valor * 0.98,
+            'Crédito': (valor) => valor * 0.965,
+            'Pix': (valor) => valor * 0.98,
+            'Dinheiro': (valor) => valor * 0.99
+        };
+        
+        let resultado = '<h2>Teste das Regras:</h2>';
+        
+        const tipos = ['Voucher', 'Débito', 'Crédito', 'Pix', 'Dinheiro'];
+        const valorTeste = 100;
+        
+        tipos.forEach(tipo => {
+            const regra = EntradaRules[tipo];
+            if (regra) {
+                const valorCalculado = regra(valorTeste);
+                resultado += `<p>${tipo}: R$ ${valorTeste} → R$ ${valorCalculado.toFixed(2)}</p>`;
+            } else {
+                resultado += `<p>${tipo}: ERRO - Regra não encontrada</p>`;
+            }
+        });
+        
+        document.getElementById('resultado').innerHTML = resultado;
+    </script>
+</body>
+</html>

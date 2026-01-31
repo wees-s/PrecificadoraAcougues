@@ -44,24 +44,41 @@
     <main class="container mx-auto px-4 py-6">
         <!-- Dashboard Section -->
         <section id="dashboard" class="content-section">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Seletor de Mês -->
+            <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-800">📊 Dashboard</h2>
+                    <div class="flex items-center gap-2">
+                        <label for="dashboardMes" class="text-sm font-medium text-gray-700">Mês de Referência:</label>
+                        <input type="month" id="dashboardMes" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <!-- Resumo Financeiro -->
                 <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-2">💰 Saldo Atual</h3>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">💰 Saldo do Mês</h3>
                     <p class="text-3xl font-bold text-green-600" id="saldoAtual">R$ 0,00</p>
-                    <p class="text-sm text-gray-500 mt-2">Lucro/Prejuízo do período</p>
+                    <p class="text-sm text-gray-500 mt-2">Entradas - Saídas do período</p>
                 </div>
                 
                 <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-2">📋 Contas à Pagar</h3>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">🟢 Entradas do Mês</h3>
+                    <p class="text-3xl font-bold text-blue-600" id="totalEntradas">R$ 0,00</p>
+                    <p class="text-sm text-gray-500 mt-2" id="qtdEntradas">0 entradas</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">📋 Contas Pagas</h3>
+                    <p class="text-3xl font-bold text-green-600" id="contasPagas">R$ 0,00</p>
+                    <p class="text-sm text-gray-500 mt-2" id="qtdContasPagas">0 contas pagas</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">🟠 Contas à Pagar</h3>
                     <p class="text-3xl font-bold text-red-600" id="totalContas">R$ 0,00</p>
                     <p class="text-sm text-gray-500 mt-2" id="contasVencidas">0 contas vencidas</p>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-2">💵 Entradas do Mês</h3>
-                    <p class="text-3xl font-bold text-blue-600" id="totalEntradas">R$ 0,00</p>
-                    <p class="text-sm text-gray-500 mt-2" id="mediaDiaria">R$ 0,00 média/dia</p>
                 </div>
             </div>
 
@@ -69,12 +86,16 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <h3 class="text-lg font-semibold text-gray-700 mb-4">Evolução Financeira</h3>
-                    <canvas id="evolucaoChart"></canvas>
+                    <div class="chart-container">
+                        <canvas id="evolucaoChart"></canvas>
+                    </div>
                 </div>
                 
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <h3 class="text-lg font-semibold text-gray-700 mb-4">Distribuição de Entradas</h3>
-                    <canvas id="distribuicaoChart"></canvas>
+                    <div class="chart-container">
+                        <canvas id="distribuicaoChart"></canvas>
+                    </div>
                 </div>
             </div>
         </section>
