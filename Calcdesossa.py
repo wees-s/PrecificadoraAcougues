@@ -91,7 +91,7 @@ def calcular_traseiro(peso, preco, media_perdas, media_lucro):
     contra_file = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.10)
     picanha = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.4)
     mignon = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.35)
-    musculo = (preco * (media_perdas / 100 + 1))
+    musculo = (preco * (media_perdas / 100 + 1 + 0.10))
     coxao_duro_e_lagarto = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 - 0.05)
     maminha = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1)
     alcatra = (preco * (media_perdas / 100 + 1)) * (media_lucro / 100 + 1 + 0.0655)
