@@ -14,8 +14,8 @@ class EntradasManager {
         this.init();
     }
 
-    init() {
-        this.carregarEntradas();
+    async init() {
+        await this.carregarEntradas();
         this.setupEventListeners();
         this.renderizarEntradas();
     }
@@ -43,11 +43,11 @@ class EntradasManager {
         }
     }
 
-    carregarEntradas() {
-        this.entradas = storage.carregarEntradas();
+    async carregarEntradas() {
+        this.entradas = await storage.carregarEntradas();
     }
 
-    adicionarEntrada() {
+    async adicionarEntrada() {
         const dataEntrada = document.getElementById('dataEntrada').value;
         const valor = parseFloat(document.getElementById('valorEntrada').value);
         const tipoEntrada = document.getElementById('tipoEntrada').value;
@@ -73,19 +73,23 @@ class EntradasManager {
             tipoEntrada
         };
 
-        const novaEntrada = storage.adicionarEntrada(entrada);
-        this.entradas.push(novaEntrada);
+        const novaEntrada = await storage.adicionarEntrada(entrada);
+        if (novaEntrada) {
+            this.entradas.push(novaEntrada);
 
-        this.limparFormulario();
-        this.renderizarEntradas();
-        this.mostrarNotificacao('Entrada registrada com sucesso!', 'success');
+            this.limparFormulario();
+            this.renderizarEntradas();
+            this.mostrarNotificacao('Entrada registrada com sucesso!', 'success');
 
-        if (typeof dashboard !== 'undefined') {
-            dashboard.atualizarDados();
+            if (typeof dashboard !== 'undefined') {
+                dashboard.atualizarDados();
+            }
+        } else {
+            this.mostrarNotificacao('Erro ao registrar entrada!', 'error');
         }
     }
 
-    editarEntrada(id) {
+    async editarEntrada(id) {
         const entrada = this.entradas.find(e => e.id === id);
         if (!entrada) return;
 
@@ -95,18 +99,19 @@ class EntradasManager {
         document.getElementById('tipoEntrada').value = entrada.tipoEntrada;
 
         // Remover entrada atual para edição
-        this.excluirEntrada(id, false);
+        await this.excluirEntrada(id, false);
         
         // Scroll para o formulário
         document.getElementById('entradaForm').scrollIntoView({ behavior: 'smooth' });
     }
 
-    excluirEntrada(id, mostrarConfirmacao = true) {
+    async excluirEntrada(id, mostrarConfirmacao = true) {
         if (mostrarConfirmacao && !confirm('Tem certeza que deseja excluir esta entrada?')) {
             return;
         }
 
-        if (storage.excluirEntrada(id)) {
+        const excluido = await storage.excluirEntrada(id);
+        if (excluido) {
             this.entradas = this.entradas.filter(e => e.id !== id);
             this.renderizarEntradas();
             this.mostrarNotificacao('Entrada excluída com sucesso!', 'success');
@@ -115,6 +120,8 @@ class EntradasManager {
             if (typeof dashboard !== 'undefined') {
                 dashboard.atualizarDados();
             }
+        } else {
+            this.mostrarNotificacao('Erro ao excluir entrada!', 'error');
         }
     }
 
@@ -206,14 +213,16 @@ class EntradasManager {
         const form = document.getElementById('entradaForm');
         if (form) {
             form.reset();
-            // Definir data atual como padrão
-            document.getElementById('dataEntrada').value = new Date().toISOString().split('T')[0];
+            // Definir data atual como padrão usando DateUtils
+            const dataEntrada = document.getElementById('dataEntrada');
+            if (dataEntrada) {
+                dataEntrada.value = DateUtils.getDataLocal();
+            }
         }
     }
 
     formatarData(dataString) {
-        const data = new Date(dataString);
-        return data.toLocaleDateString('pt-BR');
+        return DateUtils.formatarDataBrasil(dataString);
     }
 
     mostrarNotificacao(mensagem, tipo = 'success') {

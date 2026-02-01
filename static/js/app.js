@@ -31,8 +31,8 @@ class FinanceiroApp {
     }
 
     definirDataPadrao() {
-        // Definir data atual como padrão para campos de data
-        const dataAtual = new Date().toISOString().split('T')[0];
+        // Usar utilitário de data para preservar fuso horário local
+        const dataAtual = DateUtils.getDataLocal();
         
         const dataVencimento = document.getElementById('dataVencimento');
         if (dataVencimento && !dataVencimento.value) {
@@ -45,7 +45,7 @@ class FinanceiroApp {
         }
 
         // Definir mês atual para filtros
-        const mesAtual = new Date().toISOString().slice(0, 7);
+        const mesAtual = DateUtils.getMesLocal();
         
         const filtroMes = document.getElementById('filtroMes');
         if (filtroMes && !filtroMes.value) {
@@ -187,8 +187,7 @@ class FinanceiroApp {
     }
 
     formatarData(dataString) {
-        const data = new Date(dataString);
-        return data.toLocaleDateString('pt-BR');
+        return DateUtils.formatarDataBrasil(dataString);
     }
 
     validarCPF(cpf) {

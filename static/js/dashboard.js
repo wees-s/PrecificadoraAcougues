@@ -31,8 +31,7 @@ class DashboardManager {
     definirMesPadrao() {
         const dashboardMes = document.getElementById('dashboardMes');
         if (dashboardMes && !dashboardMes.value) {
-            const mesAtual = new Date().toISOString().slice(0, 7);
-            dashboardMes.value = mesAtual;
+            dashboardMes.value = DateUtils.getMesLocal();
         }
     }
 

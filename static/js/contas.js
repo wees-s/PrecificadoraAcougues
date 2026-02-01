@@ -6,8 +6,8 @@ class ContasManager {
         this.init();
     }
 
-    init() {
-        this.carregarContas();
+    async init() {
+        await this.carregarContas();
         this.setupEventListeners();
         this.renderizarContas();
     }
@@ -35,11 +35,11 @@ class ContasManager {
         }
     }
 
-    carregarContas() {
-        this.contas = storage.carregarContas();
+    async carregarContas() {
+        this.contas = await storage.carregarContas();
     }
 
-    adicionarConta() {
+    async adicionarConta() {
         const empresa = document.getElementById('empresa').value.trim();
         const valor = parseFloat(document.getElementById('valor').value);
         const dataVencimento = document.getElementById('dataVencimento').value;
@@ -59,20 +59,24 @@ class ContasManager {
             status
         };
 
-        const novaConta = storage.adicionarConta(conta);
-        this.contas.push(novaConta);
-        
-        this.limparFormulario();
-        this.renderizarContas();
-        this.mostrarNotificacao('Conta adicionada com sucesso!', 'success');
-        
-        // Atualizar dashboard
-        if (typeof dashboard !== 'undefined') {
-            dashboard.atualizarDados();
+        const novaConta = await storage.adicionarConta(conta);
+        if (novaConta) {
+            this.contas.push(novaConta);
+            
+            this.limparFormulario();
+            this.renderizarContas();
+            this.mostrarNotificacao('Conta adicionada com sucesso!', 'success');
+            
+            // Atualizar dashboard
+            if (typeof dashboard !== 'undefined') {
+                dashboard.atualizarDados();
+            }
+        } else {
+            this.mostrarNotificacao('Erro ao adicionar conta!', 'error');
         }
     }
 
-    editarConta(id) {
+    async editarConta(id) {
         const conta = this.contas.find(c => c.id === id);
         if (!conta) return;
 
@@ -84,18 +88,19 @@ class ContasManager {
         document.getElementById('status').value = conta.status;
 
         // Remover conta atual para edição
-        this.excluirConta(id, false);
+        await this.excluirConta(id, false);
         
         // Scroll para o formulário
         document.getElementById('contaForm').scrollIntoView({ behavior: 'smooth' });
     }
 
-    excluirConta(id, mostrarConfirmacao = true) {
+    async excluirConta(id, mostrarConfirmacao = true) {
         if (mostrarConfirmacao && !confirm('Tem certeza que deseja excluir esta conta?')) {
             return;
         }
 
-        if (storage.excluirConta(id)) {
+        const excluido = await storage.excluirConta(id);
+        if (excluido) {
             this.contas = this.contas.filter(c => c.id !== id);
             this.renderizarContas();
             this.mostrarNotificacao('Conta excluída com sucesso!', 'success');
@@ -104,17 +109,20 @@ class ContasManager {
             if (typeof dashboard !== 'undefined') {
                 dashboard.atualizarDados();
             }
+        } else {
+            this.mostrarNotificacao('Erro ao excluir conta!', 'error');
         }
     }
 
-    toggleStatus(id) {
+    async toggleStatus(id) {
         const conta = this.contas.find(c => c.id === id);
         if (!conta) return;
 
         const novoStatus = conta.status === 'pago' ? 'à pagar' : 'pago';
         const dadosAtualizados = { status: novoStatus };
         
-        if (storage.atualizarConta(id, dadosAtualizados)) {
+        const atualizado = await storage.atualizarConta(id, dadosAtualizados);
+        if (atualizado) {
             conta.status = novoStatus;
             this.renderizarContas();
             this.mostrarNotificacao(`Status atualizado para ${novoStatus}!`, 'success');
@@ -123,6 +131,8 @@ class ContasManager {
             if (typeof dashboard !== 'undefined') {
                 dashboard.atualizarDados();
             }
+        } else {
+            this.mostrarNotificacao('Erro ao atualizar status!', 'error');
         }
     }
 
@@ -221,14 +231,16 @@ class ContasManager {
         const form = document.getElementById('contaForm');
         if (form) {
             form.reset();
-            // Definir data atual como padrão
-            document.getElementById('dataVencimento').value = new Date().toISOString().split('T')[0];
+            // Definir data atual como padrão usando DateUtils
+            const dataVencimento = document.getElementById('dataVencimento');
+            if (dataVencimento) {
+                dataVencimento.value = DateUtils.getDataLocal();
+            }
         }
     }
 
     formatarData(dataString) {
-        const data = new Date(dataString);
-        return data.toLocaleDateString('pt-BR');
+        return DateUtils.formatarDataBrasil(dataString);
     }
 
     escapeHtml(text) {

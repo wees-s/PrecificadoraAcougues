@@ -1,0 +1,26 @@
+{
+  "name": "precificadora-acougues",
+  "version": "1.0.0",
+  "description": "Sistema de controle financeiro comercial com persistência JSON",
+  "main": "static/server.js",
+  "scripts": {
+    "start": "node static/server.js",
+    "dev": "node static/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "financeiro",
+    "controle",
+    "comercial",
+    "json",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
