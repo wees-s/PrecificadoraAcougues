@@ -153,14 +153,21 @@ class ContasManager {
         if (filtroMes) {
             const [ano, mes] = filtroMes.split('-');
             contasFiltradas = contasFiltradas.filter(c => {
-                const dataVenc = new Date(c.dataVencimento);
+                // Usar DateUtils para parsing seguro da data
+                if (!DateUtils.isValidDate(c.dataVencimento)) return false;
+                
+                const dataVenc = new Date(c.dataVencimento + 'T00:00:00');
                 return dataVenc.getFullYear() === parseInt(ano) && 
                        (dataVenc.getMonth() + 1) === parseInt(mes);
             });
         }
 
-        // Ordenar por data de vencimento
-        contasFiltradas.sort((a, b) => new Date(a.dataVencimento) - new Date(b.dataVencimento));
+        // Ordenar por data de vencimento - usando parsing seguro
+        contasFiltradas.sort((a, b) => {
+            const dataA = new Date(a.dataVencimento + 'T00:00:00');
+            const dataB = new Date(b.dataVencimento + 'T00:00:00');
+            return dataA - dataB;
+        });
 
         tbody.innerHTML = '';
 
@@ -267,21 +274,27 @@ class ContasManager {
 
     // Obter resumo para dashboard
     obterResumo() {
+        // Usar DateUtils para obter data atual de forma consistente
+        const mesAtual = new Date().getMonth() + 1; // +1 porque getMonth() é 0-11
+        const anoAtual = new Date().getFullYear();
         const dataAtual = new Date();
-        const mesAtual = dataAtual.getMonth();
-        const anoAtual = dataAtual.getFullYear();
+        dataAtual.setHours(0, 0, 0, 0); // Zerar horas para comparação justa
 
         const contasAPagar = this.contas.filter(c => c.status === 'à pagar');
         const contasPagas = this.contas.filter(c => c.status === 'pago');
         const contasVencidas = this.contas.filter(c => {
             if (c.status === 'pago') return false;
-            const dataVenc = new Date(c.dataVencimento);
+            if (!DateUtils.isValidDate(c.dataVencimento)) return false;
+            
+            const dataVenc = new Date(c.dataVencimento + 'T00:00:00');
             return dataVenc < dataAtual;
         });
 
         const contasMes = this.contas.filter(c => {
-            const dataVenc = new Date(c.dataVencimento);
-            return dataVenc.getMonth() === mesAtual && dataVenc.getFullYear() === anoAtual;
+            if (!DateUtils.isValidDate(c.dataVencimento)) return false;
+            
+            const dataVenc = new Date(c.dataVencimento + 'T00:00:00');
+            return (dataVenc.getMonth() + 1) === mesAtual && dataVenc.getFullYear() === anoAtual;
         });
 
         return {

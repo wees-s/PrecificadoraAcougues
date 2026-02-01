@@ -41,43 +41,56 @@ O sistema agora usa **arquivo JSON** como fonte principal de dados:
 - `GET /api/dados` - Todos os dados
 - `GET /api/contas` - Apenas contas
 - `GET /api/entradas` - Apenas entradas
+- `GET /api/stats` - Estatísticas do banco
 - `GET /api/health` - Status do servidor
 
 #### Escrita
 - `POST /api/contas` - Salvar contas
 - `POST /api/entradas` - Salvar entradas
 - `POST /api/dados` - Salvar todos os dados
+- `POST /api/backup` - Criar backup
 
-## 📋 Funcionalidades
+#### Cache
+- **Memória**: 2 minutos (temporário)
+- **Offline**: Dados disponíveis mesmo sem conexão
+- **Segurança**: Nenhum dado fica no navegador
 
-### ✅ Controle Financeiro (Web)
+## Funcionalidades
+
+### Controle Financeiro (Web)
 - **Dashboard mensal**: Seleção de período e cálculos precisos
 - **Contas à pagar**: Gestão completa com status
-- **Entradas**: Registros com percentuais por tipo
+- **Entradas**: Registros com percentuais automáticos
 - **Relatórios**: Exportação e análise
-- **Persistência real**: Dados salvos permanentemente
+- **Persistência real**: Banco de dados SQLite
+- **Backup automático**: Via API
+- **Segurança**: Dados protegidos contra limpeza do navegador
 
-### 🧮 Calculadora de Precificação (Tkinter)
+### Calculadora de Precificação (Tkinter)
 - Cálculo para Coxão Bola, Dianteiro, Traseiro
 - Parâmetros configuráveis (perdas, lucro)
 - Interface desktop nativa
 
-### 🎯 Regras de Percentuais (Entradas)
+### Regras de Percentuais (Entradas)
 - **Voucher**: 88% do valor
 - **Débito**: 98% do valor
 - **Crédito**: 96.5% do valor
 - **Pix**: 98% do valor
 - **Dinheiro**: 99% do valor
 
-## 🔄 Fluxo de Dados
+## Fluxo de Dados
 
 ```
-Front-end → API REST → Arquivo JSON
+Front-end → API REST → SQLite Database
     ↓         ↓           ↓
-Cache ← localStorage ← Fallback
+Cache ← Memória ← Backup Automático
 ```
 
-1. **Front-end** faz requisição à API
+1. **Front-end** faz requisições HTTP à API
+2. **API** lê/escreve no banco SQLite
+3. **Cache** temporário em memória (2 min)
+4. **Backup** automático disponível
+5. **Persistência** total e segura
 2. **API** lê/escreve no arquivo `data.json`
 3. **Cache** atualizado automaticamente
 4. **Fallback**: Se API falhar, usa cache local

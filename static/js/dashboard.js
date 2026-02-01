@@ -48,13 +48,17 @@ class DashboardManager {
         
         // Obter dados filtrados pelo mês selecionado
         const contasMes = contasManager.contas.filter(c => {
-            const dataVenc = new Date(c.dataVencimento);
+            if (!DateUtils.isValidDate(c.dataVencimento)) return false;
+            
+            const dataVenc = new Date(c.dataVencimento + 'T00:00:00');
             return dataVenc.getFullYear() === parseInt(ano) && 
                    (dataVenc.getMonth() + 1) === parseInt(mes);
         });
 
         const entradasMes = entradasManager.entradas.filter(e => {
-            const dataEntrada = new Date(e.dataEntrada);
+            if (!DateUtils.isValidDate(e.dataEntrada)) return false;
+            
+            const dataEntrada = new Date(e.dataEntrada + 'T00:00:00');
             return dataEntrada.getFullYear() === parseInt(ano) && 
                    (dataEntrada.getMonth() + 1) === parseInt(mes);
         });
@@ -105,9 +109,13 @@ class DashboardManager {
 
         // Contas vencidas
         const dataAtual = new Date();
+        dataAtual.setHours(0, 0, 0, 0); // Zerar horas para comparação justa
+        
         const contasVencidas = contasMes.filter(c => {
             if (c.status === 'pago') return false;
-            const dataVenc = new Date(c.dataVencimento);
+            if (!DateUtils.isValidDate(c.dataVencimento)) return false;
+            
+            const dataVenc = new Date(c.dataVencimento + 'T00:00:00');
             return dataVenc < dataAtual;
         });
 
@@ -258,13 +266,17 @@ class DashboardManager {
         const [ano, mes] = mesAno.split('-');
         
         const contas = contasManager.contas.filter(c => {
-            const dataVenc = new Date(c.dataVencimento);
+            if (!DateUtils.isValidDate(c.dataVencimento)) return false;
+            
+            const dataVenc = new Date(c.dataVencimento + 'T00:00:00');
             return dataVenc.getFullYear() === parseInt(ano) && 
                    (dataVenc.getMonth() + 1) === parseInt(mes);
         });
 
         const entradas = entradasManager.entradas.filter(e => {
-            const dataEntrada = new Date(e.dataEntrada);
+            if (!DateUtils.isValidDate(e.dataEntrada)) return false;
+            
+            const dataEntrada = new Date(e.dataEntrada + 'T00:00:00');
             return dataEntrada.getFullYear() === parseInt(ano) && 
                    (dataEntrada.getMonth() + 1) === parseInt(mes);
         });

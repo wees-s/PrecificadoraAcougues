@@ -1,33 +1,36 @@
-// Sistema de armazenamento com API como fonte principal e localStorage como cache
+// Sistema de armazenamento com API Python e arquivos JSON
 
 class StorageManager {
     constructor() {
-        this.keys = {
-            contas: 'contas_pagar',
-            entradas: 'entradas_financeiras',
-            config: 'configuracoes',
-            cacheTimestamp: 'cache_timestamp'
+        // URL base da API (porta 5000 para Python)
+        this.apiBaseUrl = window.location.origin.includes(':3000') 
+            ? 'http://localhost:5000' 
+            : window.location.origin;
+        
+        // Cache temporário em memória (não persiste)
+        this.memoryCache = {
+            contas: null,
+            entradas: null,
+            timestamp: null
         };
         
-        // URL base da API (ajustar para porta correta)
-        this.apiBaseUrl = window.location.origin;
-        
-        // Cache em minutos
-        this.cacheDuration = 5;
+        // Cache duration em milissegundos (2 minutos)
+        this.cacheDuration = 2 * 60 * 1000;
     }
 
-    // Verificar se o cache é válido
+    // Verificar se o cache em memória é válido
     isCacheValid() {
-        const timestamp = localStorage.getItem(this.keys.cacheTimestamp);
-        if (!timestamp) return false;
-        
-        const cacheAge = (Date.now() - parseInt(timestamp)) / (1000 * 60);
-        return cacheAge < this.cacheDuration;
+        return this.memoryCache.timestamp && 
+               (Date.now() - this.memoryCache.timestamp) < this.cacheDuration;
     }
 
-    // Salvar timestamp do cache
-    updateCacheTimestamp() {
-        localStorage.setItem(this.keys.cacheTimestamp, Date.now().toString());
+    // Atualizar cache em memória
+    updateMemoryCache(contas, entradas) {
+        this.memoryCache = {
+            contas: contas,
+            entradas: entradas,
+            timestamp: Date.now()
+        };
     }
 
     // Função genérica para fazer requisições à API
@@ -57,28 +60,36 @@ class StorageManager {
         }
     }
 
-    // Carregar contas da API (com fallback para localStorage)
+    // Carregar contas da API (com cache em memória)
     async carregarContas() {
         try {
-            // Tentar carregar da API primeiro
-            const dados = await this.apiRequest('/dados');
-            
-            if (dados && dados.contas) {
-                // Atualizar cache
-                localStorage.setItem(this.keys.contas, JSON.stringify(dados.contas));
-                this.updateCacheTimestamp();
-                return dados.contas;
+            // Tentar usar cache em memória primeiro
+            if (this.isCacheValid() && this.memoryCache.contas) {
+                console.log('📋 Usando cache em memória para contas');
+                return this.memoryCache.contas;
             }
-        } catch (error) {
-            console.warn('Falha ao carregar contas da API, usando cache local:', error);
-        }
 
-        // Fallback para localStorage
-        try {
-            const contas = localStorage.getItem(this.keys.contas);
-            return contas ? JSON.parse(contas) : [];
+            // Carregar da API
+            console.log('🔄 Carregando contas da API JSON...');
+            const contas = await this.apiRequest('/contas');
+            
+            // Atualizar cache
+            if (this.isCacheValid()) {
+                this.memoryCache.contas = contas;
+            }
+            
+            return contas;
         } catch (error) {
-            console.error('Erro ao carregar contas do cache:', error);
+            console.error('❌ Falha ao carregar contas da API:', error);
+            
+            // Tentar usar cache antigo se disponível
+            if (this.memoryCache.contas) {
+                console.warn('⚠️ Usando cache antigo de contas (offline)');
+                return this.memoryCache.contas;
+            }
+            
+            // Retornar array vazio se não houver cache
+            console.warn('📭 Nenhum dado disponível, retornando array vazio');
             return [];
         }
     }
@@ -86,50 +97,52 @@ class StorageManager {
     // Salvar contas na API
     async salvarContas(contas) {
         try {
-            // Salvar na API
-            await this.apiRequest('/contas', 'POST', contas);
+            console.log('💾 Salvando contas em arquivos JSON...');
+            const resultado = await this.apiRequest('/contas', 'POST', contas);
             
-            // Atualizar cache local
-            localStorage.setItem(this.keys.contas, JSON.stringify(contas));
-            this.updateCacheTimestamp();
+            // Atualizar cache em memória
+            if (this.isCacheValid()) {
+                this.memoryCache.contas = contas;
+            }
             
+            console.log('✅ Contas salvas com sucesso em JSON');
             return true;
         } catch (error) {
-            console.error('Erro ao salvar contas na API, salvando apenas localmente:', error);
-            
-            // Fallback: salvar apenas no localStorage
-            try {
-                localStorage.setItem(this.keys.contas, JSON.stringify(contas));
-                return true;
-            } catch (localError) {
-                console.error('Erro ao salvar contas localmente:', localError);
-                return false;
-            }
+            console.error('❌ Erro ao salvar contas em JSON:', error);
+            return false;
         }
     }
 
-    // Carregar entradas da API (com fallback para localStorage)
+    // Carregar entradas da API (com cache em memória)
     async carregarEntradas() {
         try {
-            // Tentar carregar da API primeiro
-            const dados = await this.apiRequest('/dados');
-            
-            if (dados && dados.entradas) {
-                // Atualizar cache
-                localStorage.setItem(this.keys.entradas, JSON.stringify(dados.entradas));
-                this.updateCacheTimestamp();
-                return dados.entradas;
+            // Tentar usar cache em memória primeiro
+            if (this.isCacheValid() && this.memoryCache.entradas) {
+                console.log('💰 Usando cache em memória para entradas');
+                return this.memoryCache.entradas;
             }
-        } catch (error) {
-            console.warn('Falha ao carregar entradas da API, usando cache local:', error);
-        }
 
-        // Fallback para localStorage
-        try {
-            const entradas = localStorage.getItem(this.keys.entradas);
-            return entradas ? JSON.parse(entradas) : [];
+            // Carregar da API
+            console.log('🔄 Carregando entradas da API JSON...');
+            const entradas = await this.apiRequest('/entradas');
+            
+            // Atualizar cache
+            if (this.isCacheValid()) {
+                this.memoryCache.entradas = entradas;
+            }
+            
+            return entradas;
         } catch (error) {
-            console.error('Erro ao carregar entradas do cache:', error);
+            console.error('❌ Falha ao carregar entradas da API:', error);
+            
+            // Tentar usar cache antigo se disponível
+            if (this.memoryCache.entradas) {
+                console.warn('⚠️ Usando cache antigo de entradas (offline)');
+                return this.memoryCache.entradas;
+            }
+            
+            // Retornar array vazio se não houver cache
+            console.warn('📭 Nenhum dado disponível, retornando array vazio');
             return [];
         }
     }
@@ -137,25 +150,19 @@ class StorageManager {
     // Salvar entradas na API
     async salvarEntradas(entradas) {
         try {
-            // Salvar na API
-            await this.apiRequest('/entradas', 'POST', entradas);
+            console.log('💾 Salvando entradas em arquivos JSON...');
+            const resultado = await this.apiRequest('/entradas', 'POST', entradas);
             
-            // Atualizar cache local
-            localStorage.setItem(this.keys.entradas, JSON.stringify(entradas));
-            this.updateCacheTimestamp();
+            // Atualizar cache em memória
+            if (this.isCacheValid()) {
+                this.memoryCache.entradas = entradas;
+            }
             
+            console.log('✅ Entradas salvas com sucesso em JSON');
             return true;
         } catch (error) {
-            console.error('Erro ao salvar entradas na API, salvando apenas localmente:', error);
-            
-            // Fallback: salvar apenas no localStorage
-            try {
-                localStorage.setItem(this.keys.entradas, JSON.stringify(entradas));
-                return true;
-            } catch (localError) {
-                console.error('Erro ao salvar entradas localmente:', localError);
-                return false;
-            }
+            console.error('❌ Erro ao salvar entradas em JSON:', error);
+            return false;
         }
     }
 
@@ -226,29 +233,25 @@ class StorageManager {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
 
-    // Limpar todos os dados (API e localStorage)
+    // Limpar todos os dados (API JSON)
     async limparDados() {
         try {
-            // Limpar na API
-            await this.apiRequest('/dados', 'POST', {
-                contas: [],
-                entradas: [],
-                config: {},
-                ultimaAtualizacao: new Date().toISOString()
-            });
-        } catch (error) {
-            console.error('Erro ao limpar dados na API:', error);
-        }
-
-        // Limpar cache local
-        try {
-            localStorage.removeItem(this.keys.contas);
-            localStorage.removeItem(this.keys.entradas);
-            localStorage.removeItem(this.keys.config);
-            localStorage.removeItem(this.keys.cacheTimestamp);
+            await Promise.all([
+                this.salvarContas([]),
+                this.salvarEntradas([])
+            ]);
+            
+            // Limpar cache em memória
+            this.memoryCache = {
+                contas: null,
+                entradas: null,
+                timestamp: null
+            };
+            
+            console.log('🗑️ Todos os dados foram limpos dos arquivos JSON');
             return true;
         } catch (error) {
-            console.error('Erro ao limpar cache local:', error);
+            console.error('❌ Erro ao limpar dados:', error);
             return false;
         }
     }
@@ -256,23 +259,21 @@ class StorageManager {
     // Exportar dados
     async exportarDados() {
         try {
-            // Tentar obter da API primeiro
             const dados = await this.apiRequest('/dados');
             return {
                 ...dados,
                 dataExportacao: new Date().toISOString(),
-                fonte: 'API'
+                fonte: 'JSON Files'
             };
         } catch (error) {
-            console.warn('Usando dados do cache para exportação:', error);
+            console.error('❌ Erro ao exportar dados:', error);
             
-            // Fallback para localStorage
+            // Retornar dados do cache se disponível
             return {
-                contas: JSON.parse(localStorage.getItem(this.keys.contas) || '[]'),
-                entradas: JSON.parse(localStorage.getItem(this.keys.entradas) || '[]'),
-                config: JSON.parse(localStorage.getItem(this.keys.config) || '{}'),
+                contas: this.memoryCache.contas || [],
+                entradas: this.memoryCache.entradas || [],
                 dataExportacao: new Date().toISOString(),
-                fonte: 'Cache Local'
+                fonte: 'Memory Cache (Offline)'
             };
         }
     }
@@ -280,24 +281,19 @@ class StorageManager {
     // Importar dados
     async importarDados(dados) {
         try {
-            // Salvar na API
             await this.apiRequest('/dados', 'POST', dados);
             
-            // Atualizar cache local
-            if (dados.contas) {
-                localStorage.setItem(this.keys.contas, JSON.stringify(dados.contas));
-            }
-            if (dados.entradas) {
-                localStorage.setItem(this.keys.entradas, JSON.stringify(dados.entradas));
-            }
-            if (dados.config) {
-                localStorage.setItem(this.keys.config, JSON.stringify(dados.config));
-            }
+            // Limpar cache para forçar recarregamento
+            this.memoryCache = {
+                contas: null,
+                entradas: null,
+                timestamp: null
+            };
             
-            this.updateCacheTimestamp();
+            console.log('📥 Dados importados com sucesso para arquivos JSON');
             return true;
         } catch (error) {
-            console.error('Erro ao importar dados:', error);
+            console.error('❌ Erro ao importar dados:', error);
             return false;
         }
     }
@@ -309,6 +305,26 @@ class StorageManager {
             return true;
         } catch (error) {
             return false;
+        }
+    }
+
+    // Obter estatísticas do banco
+    async obterEstatisticasBD() {
+        try {
+            return await this.apiRequest('/stats');
+        } catch (error) {
+            console.error('❌ Erro ao obter estatísticas:', error);
+            return null;
+        }
+    }
+
+    // Criar backup do banco
+    async criarBackup() {
+        try {
+            return await this.apiRequest('/backup', 'POST');
+        } catch (error) {
+            console.error('❌ Erro ao criar backup:', error);
+            throw error;
         }
     }
 
@@ -328,7 +344,9 @@ class StorageManager {
             const contasPagas = contas.filter(c => c.status === 'pago');
             const contasVencidas = contas.filter(c => {
                 if (c.status === 'pago') return false;
-                const dataVenc = new Date(c.dataVencimento);
+                if (!DateUtils.isValidDate(c.dataVencimento)) return false;
+                
+                const dataVenc = new Date(c.dataVencimento + 'T00:00:00');
                 return dataVenc < dataAtual;
             });
 
@@ -337,7 +355,9 @@ class StorageManager {
 
             // Entradas do mês
             const entradasMes = entradas.filter(e => {
-                const dataEntrada = new Date(e.dataEntrada);
+                if (!DateUtils.isValidDate(e.dataEntrada)) return false;
+                
+                const dataEntrada = new Date(e.dataEntrada + 'T00:00:00');
                 return dataEntrada.getMonth() === mesAtual && dataEntrada.getFullYear() === anoAtual;
             });
 
@@ -370,7 +390,7 @@ class StorageManager {
                 saldo: totalEntradasMes - totalContasAPagar
             };
         } catch (error) {
-            console.error('Erro ao obter estatísticas:', error);
+            console.error('❌ Erro ao obter estatísticas:', error);
             return {
                 contas: { total: 0, aPagar: 0, pagas: 0, vencidas: 0, valorAPagar: 0, valorPago: 0 },
                 entradas: { totalMes: 0, valorMes: 0, mediaDiaria: 0, porTipo: {} },

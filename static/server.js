@@ -1,119 +1,114 @@
-// Servidor Node.js com persistência em arquivo JSON
+// Servidor Node.js com persistência em banco de dados SQLite
 
 const express = require('express');
 const path = require('path');
-const fs = require('fs').promises;
+const database = require('./database.js');
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// Nome do arquivo de dados
-const DATA_FILE = path.join(__dirname, 'data.json');
 
 // Middleware para servir arquivos estáticos e parsear JSON
 app.use(express.static(__dirname));
 app.use(express.json());
-
-// Função para ler dados do arquivo JSON
-async function lerDados() {
-    try {
-        const data = await fs.readFile(DATA_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        // Se arquivo não existe, cria estrutura inicial
-        if (error.code === 'ENOENT') {
-            const dadosIniciais = {
-                contas: [],
-                entradas: [],
-                config: {},
-                ultimaAtualizacao: new Date().toISOString()
-            };
-            await salvarDados(dadosIniciais);
-            return dadosIniciais;
-        }
-        throw error;
-    }
-}
-
-// Função para salvar dados no arquivo JSON
-async function salvarDados(dados) {
-    dados.ultimaAtualizacao = new Date().toISOString();
-    await fs.writeFile(DATA_FILE, JSON.stringify(dados, null, 2), 'utf8');
-}
 
 // Rota principal
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// API ENDPOINTS PARA PERSISTÊNCIA DE DADOS
+// API ENDPOINTS PARA PERSISTÊNCIA DE DADOS COM SQLITE
 
 // GET - Obter todos os dados
 app.get('/api/dados', async (req, res) => {
     try {
-        const dados = await lerDados();
+        const dados = await database.getAllData();
         res.json(dados);
     } catch (error) {
-        console.error('Erro ao ler dados:', error);
-        res.status(500).json({ error: 'Erro ao ler dados' });
+        console.error('Erro ao ler dados do SQLite:', error);
+        res.status(500).json({ error: 'Erro ao ler dados do banco de dados' });
     }
 });
 
 // GET - Obter apenas contas
 app.get('/api/contas', async (req, res) => {
     try {
-        const dados = await lerDados();
-        res.json(dados.contas || []);
+        const contas = await database.getContas();
+        res.json(contas);
     } catch (error) {
-        console.error('Erro ao ler contas:', error);
-        res.status(500).json({ error: 'Erro ao ler contas' });
+        console.error('Erro ao ler contas do SQLite:', error);
+        res.status(500).json({ error: 'Erro ao ler contas do banco de dados' });
     }
 });
 
 // POST - Salvar contas
 app.post('/api/contas', async (req, res) => {
     try {
-        const dados = await lerDados();
-        dados.contas = req.body;
-        await salvarDados(dados);
-        res.json({ success: true, message: 'Contas salvas com sucesso' });
+        await database.saveContas(req.body);
+        res.json({ success: true, message: 'Contas salvas com sucesso no SQLite' });
     } catch (error) {
-        console.error('Erro ao salvar contas:', error);
-        res.status(500).json({ error: 'Erro ao salvar contas' });
+        console.error('Erro ao salvar contas no SQLite:', error);
+        res.status(500).json({ error: 'Erro ao salvar contas no banco de dados' });
     }
 });
 
 // GET - Obter apenas entradas
 app.get('/api/entradas', async (req, res) => {
     try {
-        const dados = await lerDados();
-        res.json(dados.entradas || []);
+        const entradas = await database.getEntradas();
+        res.json(entradas);
     } catch (error) {
-        console.error('Erro ao ler entradas:', error);
-        res.status(500).json({ error: 'Erro ao ler entradas' });
+        console.error('Erro ao ler entradas do SQLite:', error);
+        res.status(500).json({ error: 'Erro ao ler entradas do banco de dados' });
     }
 });
 
 // POST - Salvar entradas
 app.post('/api/entradas', async (req, res) => {
     try {
-        const dados = await lerDados();
-        dados.entradas = req.body;
-        await salvarDados(dados);
-        res.json({ success: true, message: 'Entradas salvas com sucesso' });
+        await database.saveEntradas(req.body);
+        res.json({ success: true, message: 'Entradas salvas com sucesso no SQLite' });
     } catch (error) {
-        console.error('Erro ao salvar entradas:', error);
-        res.status(500).json({ error: 'Erro ao salvar entradas' });
+        console.error('Erro ao salvar entradas no SQLite:', error);
+        res.status(500).json({ error: 'Erro ao salvar entradas no banco de dados' });
     }
 });
 
 // POST - Salvar todos os dados de uma vez
 app.post('/api/dados', async (req, res) => {
     try {
-        await salvarDados(req.body);
-        res.json({ success: true, message: 'Dados salvos com sucesso' });
+        await database.saveAllData(req.body);
+        res.json({ success: true, message: 'Dados salvos com sucesso no SQLite' });
     } catch (error) {
-        console.error('Erro ao salvar dados:', error);
-        res.status(500).json({ error: 'Erro ao salvar dados' });
+        console.error('Erro ao salvar dados no SQLite:', error);
+        res.status(500).json({ error: 'Erro ao salvar dados no banco de dados' });
+    }
+});
+
+// GET - Estatísticas do banco de dados
+app.get('/api/stats', async (req, res) => {
+    try {
+        const stats = await database.getStats();
+        res.json(stats);
+    } catch (error) {
+        console.error('Erro ao obter estatísticas:', error);
+        res.status(500).json({ error: 'Erro ao obter estatísticas do banco' });
+    }
+});
+
+// POST - Backup do banco de dados
+app.post('/api/backup', async (req, res) => {
+    try {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const backupPath = path.join(__dirname, `backup_${timestamp}.db`);
+        
+        await database.backup(backupPath);
+        res.json({ 
+            success: true, 
+            message: 'Backup criado com sucesso',
+            backupPath: backupPath
+        });
+    } catch (error) {
+        console.error('Erro ao criar backup:', error);
+        res.status(500).json({ error: 'Erro ao criar backup do banco' });
     }
 });
 
@@ -123,7 +118,7 @@ app.get('/api/health', (req, res) => {
         status: 'OK', 
         timestamp: new Date().toISOString(),
         version: '1.0.0',
-        persistence: 'JSON file'
+        persistence: 'SQLite Database'
     });
 });
 
@@ -132,12 +127,14 @@ app.get('/api/config', (req, res) => {
         appName: 'Controle Financeiro Comercial',
         version: '1.0.0',
         environment: 'development',
-        persistence: 'JSON file',
+        persistence: 'SQLite Database',
+        database: 'financeiro.db',
         features: {
             api: true,
             export: true,
             reports: true,
-            localStorage: 'cache'
+            backup: true,
+            localStorage: 'disabled'
         }
     });
 });
@@ -153,13 +150,14 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║    🚀 Servidor iniciado com persistência JSON!              ║
+║    🚀 Servidor iniciado com persistência SQLite!            ║
 ║                                                              ║
 ║    Acesso local: http://localhost:${PORT}                      ║
 ║    Acesso na rede: http://SEU_IP_LOCAL:${PORT}              ║
 ║                                                              ║
-║    📁 Arquivo de dados: data.json                           ║
-║    💾 Persistência: Arquivo JSON                             ║
+║    📁 Banco de dados: financeiro.db                         ║
+║    💾 Persistência: SQLite Database                          ║
+║    🔒 Segurança: Dados persistem após limpar navegador       ║
 ║                                                              ║
 ║    Para descobrir seu IP local:                             ║
 ║    Windows: ipconfig                                        ║
@@ -169,6 +167,19 @@ app.listen(PORT, '0.0.0.0', () => {
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
     `);
+});
+
+// Tratamento para fechar o banco de dados ao encerrar o servidor
+process.on('SIGINT', () => {
+    console.log('\n📁 Fechando conexão com o banco de dados...');
+    database.close();
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    console.log('\n📁 Fechando conexão com o banco de dados...');
+    database.close();
+    process.exit(0);
 });
 
 // Exportar para uso em testes

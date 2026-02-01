@@ -10,6 +10,14 @@ class DateUtils {
         return `${ano}-${mes}-${dia}`;
     }
 
+    // Obter data de um objeto Date no formato YYYY-MM-DD (preserva fuso horário local)
+    static getDataLocalFromDate(date) {
+        const ano = date.getFullYear();
+        const mes = String(date.getMonth() + 1).padStart(2, '0');
+        const dia = String(date.getDate()).padStart(2, '0');
+        return `${ano}-${mes}-${dia}`;
+    }
+
     // Obter mês atual no formato YYYY-MM (preserva fuso horário local)
     static getMesLocal() {
         const data = new Date();

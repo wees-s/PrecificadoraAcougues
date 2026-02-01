@@ -142,14 +142,21 @@ class EntradasManager {
         if (filtroMes) {
             const [ano, mes] = filtroMes.split('-');
             entradasFiltradas = entradasFiltradas.filter(e => {
-                const dataEntrada = new Date(e.dataEntrada);
+                // Usar DateUtils para parsing seguro da data
+                if (!DateUtils.isValidDate(e.dataEntrada)) return false;
+                
+                const dataEntrada = new Date(e.dataEntrada + 'T00:00:00');
                 return dataEntrada.getFullYear() === parseInt(ano) && 
                        (dataEntrada.getMonth() + 1) === parseInt(mes);
             });
         }
 
-        // Ordenar por data (mais recentes primeiro)
-        entradasFiltradas.sort((a, b) => new Date(b.dataEntrada) - new Date(a.dataEntrada));
+        // Ordenar por data (mais recentes primeiro) - usando parsing seguro
+        entradasFiltradas.sort((a, b) => {
+            const dataA = new Date(a.dataEntrada + 'T00:00:00');
+            const dataB = new Date(b.dataEntrada + 'T00:00:00');
+            return dataB - dataA;
+        });
 
         tbody.innerHTML = '';
 
@@ -243,13 +250,16 @@ class EntradasManager {
 
     // Obter resumo para dashboard
     obterResumo() {
-        const dataAtual = new Date();
-        const mesAtual = dataAtual.getMonth();
-        const anoAtual = dataAtual.getFullYear();
+        // Usar DateUtils para obter mês e ano atuais de forma consistente
+        const mesAtual = new Date().getMonth() + 1; // +1 porque getMonth() é 0-11
+        const anoAtual = new Date().getFullYear();
 
         const entradasMes = this.entradas.filter(e => {
-            const dataEntrada = new Date(e.dataEntrada);
-            return dataEntrada.getMonth() === mesAtual && dataEntrada.getFullYear() === anoAtual;
+            // Validar data e usar parsing seguro
+            if (!DateUtils.isValidDate(e.dataEntrada)) return false;
+            
+            const dataEntrada = new Date(e.dataEntrada + 'T00:00:00');
+            return (dataEntrada.getMonth() + 1) === mesAtual && dataEntrada.getFullYear() === anoAtual;
         });
 
         // Agrupar por tipo
@@ -272,7 +282,8 @@ class EntradasManager {
             data.setDate(data.getDate() - i);
             data.setHours(0, 0, 0, 0);
             
-            const dataStr = data.toISOString().split('T')[0];
+            // Usar DateUtils para obter data local sem problemas de fuso horário
+            const dataStr = DateUtils.getDataLocalFromDate(data);
             const entradasDia = this.entradas.filter(e => e.dataEntrada === dataStr);
             const valorDia = entradasDia.reduce((sum, e) => sum + parseFloat(e.valorCalculado), 0);
             
@@ -301,7 +312,10 @@ class EntradasManager {
 
         // Agrupar por mês
         this.entradas.forEach(entrada => {
-            const data = new Date(entrada.dataEntrada);
+            // Validar data e usar parsing seguro
+            if (!DateUtils.isValidDate(entrada.dataEntrada)) return;
+            
+            const data = new Date(entrada.dataEntrada + 'T00:00:00');
             const mesAno = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
             
             if (!dadosPorMes[mesAno]) {
